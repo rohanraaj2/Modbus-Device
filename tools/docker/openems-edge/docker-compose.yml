@@ -1,0 +1,15 @@
+version: '3.4'
+services:
+  openems-edge:
+    volumes:
+      # config file 
+      - "./config:/etc/openems/config/:rw"
+      # data file 
+      - "./data:/etc/openems/data:rw"
+    container_name: openems-edge
+    restart: always
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - 8080:8080
