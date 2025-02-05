@@ -41,6 +41,9 @@ import io.openems.edge.common.modbusslave.ModbusSlaveTable;
 import io.openems.edge.common.taskmanager.Priority;
 import io.openems.edge.meter.api.ElectricityMeter;
 import io.openems.edge.pvinverter.api.ManagedSymmetricPvInverter;
+import com.ghgande.j2mod.modbus.util.SerialParameters;
+import com.ghgande.j2mod.modbus.Modbus;
+import com.ghgande.j2mod.modbus.facade.ModbusSerialMaster;
 
 @Designate(ocd = Config.class, factory = true)
 @Component(//
@@ -61,6 +64,8 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 			ManagedSymmetricPvInverter.ChannelId.ACTIVE_POWER_LIMIT);
 	private final CalculateEnergyFromPower calculateProductionEnergy = new CalculateEnergyFromPower(this,
 			ElectricityMeter.ChannelId.ACTIVE_PRODUCTION_ENERGY);
+	final public SerialParameters sp = new SerialParameters(); //used to set baudrate, port, data bits, parity bits, etc
+	final public ModbusSerialMaster m = new ModbusSerialMaster(sp); //used to connect to the other modbus device
 
 	@Reference
 	private ConfigurationAdmin cm;
@@ -96,6 +101,14 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 		if (!config.enabled()) {
 			return;
 		}
+		sp.setBaudRate(SerialPort.BaudRate.BAUD_RATE_115200);
+        sp.setDatabits(8);
+        sp.setParity(SerialPort.Parity.NONE);
+        sp.setStopbits(1);
+
+        SerialUtils.setSerialPortFactory(new SerialPortFactoryJSSC());
+
+        Modbus.setLogLevel(Modbus.LogLevel.LEVEL_DEBUG);
 	}
 
 	@Override
