@@ -3,6 +3,14 @@ package io.openems.edge.smartsolarbox.modbus;
 import static io.openems.edge.bridge.modbus.api.ElementToChannelConverter.SCALE_FACTOR_2;
 import static io.openems.edge.bridge.modbus.api.ElementToChannelConverter.SCALE_FACTOR_3;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Timestamp;
+import java.util.Date;
+
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
@@ -34,6 +42,7 @@ import io.openems.edge.bridge.modbus.api.element.UnsignedWordElement;
 import io.openems.edge.bridge.modbus.api.element.WordOrder;
 import io.openems.edge.bridge.modbus.api.task.FC16WriteRegistersTask;
 import io.openems.edge.bridge.modbus.api.task.FC4ReadInputRegistersTask;
+import io.openems.edge.common.channel.ChannelId;
 import io.openems.edge.common.component.OpenemsComponent;
 import io.openems.edge.common.event.EdgeEventConstants;
 import io.openems.edge.common.modbusslave.ModbusSlave;
@@ -44,6 +53,7 @@ import io.openems.edge.pvinverter.api.ManagedSymmetricPvInverter;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
 import com.ghgande.j2mod.modbus.Modbus;
 import com.ghgande.j2mod.modbus.facade.ModbusSerialMaster;
+import gnu.io.SerialPort;
 
 @Designate(ocd = Config.class, factory = true)
 @Component(//
@@ -60,10 +70,7 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 		implements SolarModbusMaster, ManagedSymmetricPvInverter, ElectricityMeter, ModbusComponent, OpenemsComponent,
 		EventHandler, ModbusSlave {
 
-	private final SetPvLimitHandler setPvLimitHandler = new SetPvLimitHandler(this,
-			ManagedSymmetricPvInverter.ChannelId.ACTIVE_POWER_LIMIT);
-	private final CalculateEnergyFromPower calculateProductionEnergy = new CalculateEnergyFromPower(this,
-			ElectricityMeter.ChannelId.ACTIVE_PRODUCTION_ENERGY);
+	final private static int slaveId = 1;
 	final public SerialParameters sp = new SerialParameters(); //used to set baudrate, port, data bits, parity bits, etc
 	final public ModbusSerialMaster m = new ModbusSerialMaster(sp); //used to connect to the other modbus device
 
@@ -95,20 +102,16 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 			return;
 		}
 		this.config = config;
-		this._setMaxApparentPower(config.maxActivePower());
+		sp.setBaudRate(115200);
+		sp.setDatabits(8);
+		sp.setParity(0);
+		sp.setStopbits(1);
+
 
 		// Stop if component is disabled
 		if (!config.enabled()) {
 			return;
 		}
-		sp.setBaudRate(SerialPort.BaudRate.BAUD_RATE_115200);
-        sp.setDatabits(8);
-        sp.setParity(SerialPort.Parity.NONE);
-        sp.setStopbits(1);
-
-        SerialUtils.setSerialPortFactory(new SerialPortFactoryJSSC());
-
-        Modbus.setLogLevel(Modbus.LogLevel.LEVEL_DEBUG);
 	}
 
 	@Override
@@ -172,6 +175,13 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 		}
 	}
 
+    public void printChannelValues() {
+        for (SolarModbusMaster.ChannelId channelId : SolarModbusMaster.ChannelId.values()) {
+            Object value = channelId.name();
+            System.out.println(channelId.name() + ": " + value);
+        }
+        System.out.println(SolarModbusMaster.ChannelId.values());
+    }
 	@Override
 	public String debugLog() {
 		return "L:" + this.getActivePower().asString();
