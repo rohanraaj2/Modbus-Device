@@ -1,0 +1,11 @@
+-runfw: org.apache.felix.framework;version='[6.0.0,7)'
+-runee: JavaSE-1.8
+-runrequires: \
+    bnd.identity;id=io.openems.edge.smartsolarbox.modbus, \
+
+-runbundles: \
+    io.openems.edge.smartsolarbox.modbus;version=latest, \
+
+-runproperties: \
+    org.osgi.service.http.port=8080
+-resolve: auto

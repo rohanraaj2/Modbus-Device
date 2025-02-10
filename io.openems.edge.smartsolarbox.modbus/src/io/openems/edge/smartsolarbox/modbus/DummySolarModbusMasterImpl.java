@@ -67,7 +67,7 @@ import gnu.io.SerialPort;
 		EdgeEventConstants.TOPIC_CYCLE_EXECUTE_WRITE //
 })
 public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
-		implements SolarModbusMaster, ManagedSymmetricPvInverter, ElectricityMeter, ModbusComponent, OpenemsComponent,
+		implements SolarModbusMaster, ElectricityMeter, ModbusComponent,
 		EventHandler, ModbusSlave {
 
 	final private static int slaveId = 1;
@@ -87,16 +87,14 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 
 	public DummySolarModbusMasterImpl() {
 		super(//
-				OpenemsComponent.ChannelId.values(), //
 				ModbusComponent.ChannelId.values(), //
 				ElectricityMeter.ChannelId.values(), //
-				ManagedSymmetricPvInverter.ChannelId.values(), //
 				SolarModbusMaster.ChannelId.values() //
 		);
 	}
 
 	@Activate
-	private void activate(ComponentContext context, Config config) throws OpenemsException {
+	private void activate(ComponentContext context, Config config) {
 		if (super.activate(context, config.id(), config.alias(), config.enabled(), config.modbusUnitId(), this.cm,
 				"Modbus", config.modbus_id())) {
 			return;
@@ -107,6 +105,9 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 		sp.setParity(0);
 		sp.setStopbits(1);
 
+//		SerialUtils.setSerialPortFactory(new SerialPortFactoryJSSC());
+//		
+//		Modbus.setLogLevel(Modbus.LogLevel.LEVEL_DEBUG);
 
 		// Stop if component is disabled
 		if (!config.enabled()) {
@@ -121,7 +122,7 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 	}
 
 	@Override
-	protected ModbusProtocol defineModbusProtocol() throws OpenemsException {
+	protected ModbusProtocol defineModbusProtocol() {
 		return new ModbusProtocol(this, //
 				new FC4ReadInputRegistersTask(0x3101, Priority.HIGH,
 						m(SolarModbusMaster.ChannelId.ARRAY_CURRENT,
@@ -156,23 +157,23 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
 
 	@Override
 	public void handleEvent(Event event) {
-		if (!this.isEnabled()) {
-			return;
-		}
-		switch (event.getTopic()) {
-		case EdgeEventConstants.TOPIC_CYCLE_EXECUTE_WRITE:
-			try {
-				this.setPvLimitHandler.run();
-
-				this.channel(PvInverterSolarlog.ChannelId.PV_LIMIT_FAILED).setNextValue(false);
-			} catch (OpenemsNamedException e) {
-				this.channel(PvInverterSolarlog.ChannelId.PV_LIMIT_FAILED).setNextValue(true);
-			}
-			break;
-		case EdgeEventConstants.TOPIC_CYCLE_AFTER_PROCESS_IMAGE:
-			this.calculateProductionEnergy.update(this.getActivePower().get());
-			break;
-		}
+//		if (!this.isEnabled()) {
+//			return;
+//		}
+//		switch (event.getTopic()) {
+//		case EdgeEventConstants.TOPIC_CYCLE_EXECUTE_WRITE:
+//			try {
+//				this.setPvLimitHandler.run();
+//
+//				this.channel(PvInverterSolarlog.ChannelId.PV_LIMIT_FAILED).setNextValue(false);
+//			} catch (OpenemsNamedException e) {
+//				this.channel(PvInverterSolarlog.ChannelId.PV_LIMIT_FAILED).setNextValue(true);
+//			}
+//			break;
+//		case EdgeEventConstants.TOPIC_CYCLE_AFTER_PROCESS_IMAGE:
+//			this.calculateProductionEnergy.update(this.getActivePower().get());
+//			break;
+//		}
 	}
 
     public void printChannelValues() {
@@ -184,7 +185,7 @@ public class DummySolarModbusMasterImpl extends AbstractOpenemsModbusComponent
     }
 	@Override
 	public String debugLog() {
-		return "L:" + this.getActivePower().asString();
+		return "L:";
 	}
 
 	@Override
