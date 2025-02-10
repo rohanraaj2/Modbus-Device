@@ -5,12 +5,8 @@ Bundle-Version: 1.0.0.${tstamp}
 
 -buildpath: \
 	${buildpath},\
-	io.openems.common,\
-	io.openems.edge.bridge.modbus,\
-	io.openems.edge.common,\
 	com.ghgande.j2mod,\
-	io.openems.edge.meter.api,\
-	io.openems.edge.pvinverter.api
+	org.openmuc.jrxtx
 
 -testpath: \
 	${testpath}

@@ -3,9 +3,7 @@
 -runrequires: \
     bnd.identity;id=io.openems.edge.smartsolarbox.modbus, \
 
--runbundles: \
-    io.openems.edge.smartsolarbox.modbus;version=latest, \
-
+-runbundles: io.openems.edge.smartsolarbox.modbus;version=snapshot
 -runproperties: \
     org.osgi.service.http.port=8080
 -resolve: auto
